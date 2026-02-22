@@ -1,0 +1,3 @@
+<resources> 
+    <style name="Theme.Suraksha" parent="Theme.AppCompat.Light.DarkActionBar" /> 
+</resources>
