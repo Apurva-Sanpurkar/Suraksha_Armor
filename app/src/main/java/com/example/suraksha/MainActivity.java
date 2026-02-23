@@ -69,15 +69,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
    private void armorAndSend() {
-        // STEP 1: Apply Adversarial Noise (AI Poisoning)
+        // 1. AI Poisoning Layer
         Bitmap poisonedBitmap = PoisonEngine.applyAdversarialNoise(selectedBitmap);
         
-        // STEP 2: Embed Randomized Stegano Layer
-        // We use a fixed seed for now; later this will be a unique File_ID
+        // 2. Invisible Tracking Layer
         Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(poisonedBitmap, "SECURE_ID_001", 98765L);
         
-        // Update UI to show the protected version
-        previewImage.setImageBitmap(armoredBitmap);
-        Toast.makeText(this, "AI Poisoned & Armored! Ready for .suraksha wrapping.", Toast.LENGTH_LONG).show();
+        // 3. Binary Wrapping and Saving
+        File protectedFile = FileProtector.saveAsSuraksha(
+            armoredBitmap, 
+            getExternalFilesDir(null), 
+            "protected_" + System.currentTimeMillis()
+        );
+
+        if (protectedFile != null) {
+            previewImage.setImageBitmap(armoredBitmap);
+            Toast.makeText(this, "Media Wrapped: " + protectedFile.getName(), Toast.LENGTH_LONG).show();
+        }
     }
 }
