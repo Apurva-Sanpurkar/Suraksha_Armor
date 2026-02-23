@@ -69,13 +69,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
    private void armorAndSend() {
-        // We use a temporary seed (98765L) for now. 
-        // In the final version, this will be a unique hash of the File_ID.
-        Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(selectedBitmap, "SECURE_DATA_ID_001", 98765L);
+        // STEP 1: Apply Adversarial Noise (AI Poisoning)
+        Bitmap poisonedBitmap = PoisonEngine.applyAdversarialNoise(selectedBitmap);
         
+        // STEP 2: Embed Randomized Stegano Layer
+        // We use a fixed seed for now; later this will be a unique File_ID
+        Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(poisonedBitmap, "SECURE_ID_001", 98765L);
+        
+        // Update UI to show the protected version
         previewImage.setImageBitmap(armoredBitmap);
-        Toast.makeText(this, "Image Armored with Randomized LSB!", Toast.LENGTH_LONG).show();
-        
-        // This is where we will eventually call FileProtector to save as .suraksha.
+        Toast.makeText(this, "AI Poisoned & Armored! Ready for .suraksha wrapping.", Toast.LENGTH_LONG).show();
     }
 }
