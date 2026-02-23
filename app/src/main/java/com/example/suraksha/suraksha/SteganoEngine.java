@@ -2,39 +2,45 @@ package com.example.suraksha;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import java.util.Random;
 
 public class SteganoEngine {
-    /**
-     * Encodes a secret message into the blue channel of the bitmap pixels.
-     * This is a standard Least Significant Bit (LSB) implementation.
-     */
-    public static Bitmap encodeMessage(Bitmap source, String message) {
-        Bitmap result = source.copy(Bitmap.Config.ARGB_8888, true);
-        char[] chars = (message + "\0").toCharArray(); // Null terminator to find end of string
-        int charIndex = 0;
-        int bitIndex = 0;
 
-        for (int y = 0; y < result.getHeight() && charIndex < chars.length; y++) {
-            for (int x = 0; x < result.getWidth() && charIndex < chars.length; x++) {
-                int pixel = result.getPixel(x, y);
-                int alpha = Color.alpha(pixel);
-                int red = Color.red(pixel);
-                int green = Color.green(pixel);
-                int blue = Color.blue(pixel);
-                
-                // Get the current bit of the current character
-                int bit = (chars[charIndex] >> bitIndex) & 1;
-                
-                // Replace the LSB of the blue channel
-                blue = (blue & 0xFE) | bit;
-                
-                result.setPixel(x, y, Color.argb(alpha, red, green, blue));
-                
-                bitIndex++;
-                if (bitIndex == 8) {
-                    bitIndex = 0;
-                    charIndex++;
-                }
+    /**
+     * Suraksha Feature: Randomized LSB Encoding.
+     * Scatters bits across the image using a seed to ensure data 
+     * cannot be retrieved without the correct ID.
+     */
+    public static Bitmap encodeWithSeed(Bitmap source, String message, long seed) {
+        Bitmap result = source.copy(Bitmap.Config.ARGB_8888, true);
+        byte[] data = (message + "\0").getBytes(); 
+        
+        int width = result.getWidth();
+        int height = result.getHeight();
+        
+        // Seed ensures the "random" pixels are the same for sender and receiver.
+        Random random = new Random(seed);
+        
+        int bitIndex = 0;
+        int byteIndex = 0;
+
+        for (int i = 0; i < data.length * 8; i++) {
+            // Pick a pseudo-random pixel based on the seed.
+            int x = random.nextInt(width);
+            int y = random.nextInt(height);
+            
+            int pixel = result.getPixel(x, y);
+            int bit = (data[byteIndex] >> bitIndex) & 1;
+            
+            // Inject into the Least Significant Bit of the Blue channel.
+            int blue = (Color.blue(pixel) & 0xFE) | bit;
+            
+            result.setPixel(x, y, Color.argb(Color.alpha(pixel), Color.red(pixel), Color.green(pixel), blue));
+            
+            bitIndex++;
+            if (bitIndex == 8) {
+                bitIndex = 0;
+                byteIndex++;
             }
         }
         return result;

@@ -68,14 +68,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void armorAndSend() {
-        // This calls the SteganoEngine to hide the security layer
-        Bitmap armoredBitmap = SteganoEngine.encodeMessage(selectedBitmap, "SECURE_DATA");
+   private void armorAndSend() {
+        // We use a temporary seed (98765L) for now. 
+        // In the final version, this will be a unique hash of the File_ID.
+        Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(selectedBitmap, "SECURE_DATA_ID_001", 98765L);
         
-        // For the demo, we update the preview to show the 'armored' version
         previewImage.setImageBitmap(armoredBitmap);
-        Toast.makeText(this, "Image Armored! Ready to send.", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Image Armored with Randomized LSB!", Toast.LENGTH_LONG).show();
         
-        // TODO: Implement Intent to share the armored image via WhatsApp/Email
+        // This is where we will eventually call FileProtector to save as .suraksha.
     }
 }
