@@ -69,27 +69,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
    private void armorAndSend() {
-        // Placeholder for TFLite result. 
-        // Later, the AI will set this to true if it sees a card
-        boolean isSensitiveDetected = true; 
-
-        Bitmap poisonedBitmap = PoisonEngine.applyAdversarialNoise(selectedBitmap);
-        Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(poisonedBitmap, "FILE_001", 12345L);
+        PrivacyScanner scanner = new PrivacyScanner(this);
         
-        // Register with Firebase for the "Take Back" feature
-        FirebaseSovereignty.registerFile("FILE_001");
-
-        // Save with the new sensitivity flag
+        // Step 1: AI Privacy Scan
+        boolean isSensitiveDetected = scanner.isSensitiveMedia(selectedBitmap);
+        
+        // Step 2: Adversarial AI Poisoning (Digital Dust)
+        Bitmap poisoned = PoisonEngine.applyAdversarialNoise(selectedBitmap);
+        
+        // Step 3: Randomized Stegano Embedding
+        String fileId = "SRK_" + System.currentTimeMillis();
+        Bitmap armored = SteganoEngine.encodeWithSeed(poisoned, fileId, 12345L);
+        
+        // Step 4: AES-256 Encryption & Binary Packaging
+        String sessionKey = "SecureKey_XYZ_99"; 
         File protectedFile = FileProtector.saveAsSuraksha(
-            armoredBitmap, 
+            armored, 
             getExternalFilesDir(null), 
-            "protected_" + System.currentTimeMillis(),
-            isSensitiveDetected
+            fileId, 
+            isSensitiveDetected, 
+            sessionKey
         );
 
         if (protectedFile != null) {
-            previewImage.setImageBitmap(armoredBitmap);
-            Toast.makeText(this, "Success! Cloud Build should pass now.", Toast.LENGTH_LONG).show();
+            // Step 5: Register for Remote Revocation ("Nuke")
+            FirebaseSovereignty.registerFile(fileId);
+            
+            previewImage.setImageBitmap(armored);
+            String msg = isSensitiveDetected ? "High-Sensitivity Card detected! Locked UI enabled." : "Photo Armed!";
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         }
     }
 }
