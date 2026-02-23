@@ -46,6 +46,7 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
 // Firebase Realtime Database for the Kill Switch
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
     implementation("com.google.firebase:firebase-database")
     // Testing dependencies
     testImplementation("junit:junit:4.13.2")
