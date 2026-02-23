@@ -8,7 +8,7 @@ import android.provider.MediaStore;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
-
+import java.io.File;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -69,22 +69,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
    private void armorAndSend() {
-        // 1. AI Poisoning Layer
+        // Placeholder for TFLite result. 
+        // Later, the AI will set this to true if it sees a card
+        boolean isSensitiveDetected = true; 
+
         Bitmap poisonedBitmap = PoisonEngine.applyAdversarialNoise(selectedBitmap);
+        Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(poisonedBitmap, "FILE_001", 12345L);
         
-        // 2. Invisible Tracking Layer
-        Bitmap armoredBitmap = SteganoEngine.encodeWithSeed(poisonedBitmap, "SECURE_ID_001", 98765L);
-        
-        // 3. Binary Wrapping and Saving
+        // Register with Firebase for the "Take Back" feature
+        FirebaseSovereignty.registerFile("FILE_001");
+
+        // Save with the new sensitivity flag
         File protectedFile = FileProtector.saveAsSuraksha(
             armoredBitmap, 
             getExternalFilesDir(null), 
-            "protected_" + System.currentTimeMillis()
+            "protected_" + System.currentTimeMillis(),
+            isSensitiveDetected
         );
 
         if (protectedFile != null) {
             previewImage.setImageBitmap(armoredBitmap);
-            Toast.makeText(this, "Media Wrapped: " + protectedFile.getName(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Success! Cloud Build should pass now.", Toast.LENGTH_LONG).show();
         }
     }
 }
